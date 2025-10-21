@@ -123,6 +123,7 @@ export default function AttendancePage() {
 
   useEffect(() => {
     fetchAttendance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterDate, filterClass, filterStatus]);
 
   const getStatusBadge = (status: string) => {

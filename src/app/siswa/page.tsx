@@ -50,6 +50,7 @@ export default function SiswaDashboard() {
     } else if (user && isSiswa) {
       fetchStudentData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, isSiswa, router]);
 
   const fetchStudentData = async () => {
@@ -114,9 +115,6 @@ export default function SiswaDashboard() {
   const totalAlpha = attendance.filter((a) => a.status === "alpha").length;
   const totalIjin = attendance.filter((a) => a.status === "ijin").length;
   const totalSakit = attendance.filter((a) => a.status === "sakit").length;
-  const persentase = attendance.length > 0 
-    ? ((totalHadir / attendance.length) * 100).toFixed(1) 
-    : 0;
 
   if (loading || loadingData) {
     return (

@@ -47,6 +47,7 @@ export default function StudentDetailPage() {
 
   useEffect(() => {
     fetchStudent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const handleDownloadQR = () => {

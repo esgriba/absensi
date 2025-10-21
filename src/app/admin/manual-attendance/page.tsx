@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -59,39 +59,7 @@ export default function ManualAttendancePage() {
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      router.push("/login");
-    } else if (user && isAdmin) {
-      fetchStudents();
-    }
-  }, [user, loading, isAdmin, router]);
-
-  useEffect(() => {
-    if (students.length > 0) {
-      checkExistingAttendance();
-    }
-  }, [students, selectedDate]);
-
-  const fetchStudents = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("students")
-        .select("*")
-        .order("class", { ascending: true })
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      setStudents(data || []);
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Gagal memuat data siswa");
-    } finally {
-      setLoadingData(false);
-    }
-  };
-
-  const checkExistingAttendance = async () => {
+  const checkExistingAttendance = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("attendance")
@@ -111,6 +79,38 @@ export default function ManualAttendancePage() {
       setAttendanceData(existingMap);
     } catch (error) {
       console.error("Error:", error);
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (!loading && (!user || !isAdmin)) {
+      router.push("/login");
+    } else if (user && isAdmin) {
+      fetchStudents();
+    }
+  }, [user, loading, isAdmin, router]);
+
+  useEffect(() => {
+    if (students.length > 0) {
+      checkExistingAttendance();
+    }
+  }, [students, selectedDate, checkExistingAttendance]);
+
+  const fetchStudents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .order("class", { ascending: true })
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      setStudents(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Gagal memuat data siswa");
+    } finally {
+      setLoadingData(false);
     }
   };
 
@@ -156,7 +156,7 @@ export default function ManualAttendancePage() {
       }
 
       // Try upsert first (requires unique constraint on student_id, date)
-      let { error } = await supabase.from("attendance").upsert(
+      const { error } = await supabase.from("attendance").upsert(
         recordsToUpsert,
         {
           onConflict: "student_id,date",
