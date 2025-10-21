@@ -41,10 +41,18 @@ interface User {
   created_at: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+  nis: string;
+  class: string;
+}
+
 export default function ManageUsersPage() {
   const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -52,6 +60,7 @@ export default function ManageUsersPage() {
     password: "",
     full_name: "",
     role: "petugas",
+    student_id: "",
   });
 
   useEffect(() => {
@@ -59,6 +68,7 @@ export default function ManageUsersPage() {
       router.push("/login");
     } else if (user && isAdmin) {
       fetchUsers();
+      fetchStudents();
     }
   }, [user, loading, isAdmin, router]);
 
@@ -79,6 +89,21 @@ export default function ManageUsersPage() {
     }
   };
 
+  const fetchStudents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      setStudents(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Gagal memuat data siswa");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -87,14 +112,25 @@ export default function ManageUsersPage() {
       const bcrypt = await import("bcryptjs");
       const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-      const { error } = await supabase.from("users").insert([
-        {
-          email: formData.email,
-          password: hashedPassword,
-          full_name: formData.full_name,
-          role: formData.role,
-        },
-      ]);
+      const insertData: {
+        email: string;
+        password: string;
+        full_name: string;
+        role: string;
+        student_id?: string;
+      } = {
+        email: formData.email,
+        password: hashedPassword,
+        full_name: formData.full_name,
+        role: formData.role,
+      };
+
+      // Add student_id only if role is siswa and student_id is provided
+      if (formData.role === "siswa" && formData.student_id) {
+        insertData.student_id = formData.student_id;
+      }
+
+      const { error } = await supabase.from("users").insert([insertData]);
 
       if (error) {
         if (error.code === "23505") {
@@ -112,6 +148,7 @@ export default function ManageUsersPage() {
         password: "",
         full_name: "",
         role: "petugas",
+        student_id: "",
       });
       fetchUsers();
     } catch (error) {
@@ -236,7 +273,7 @@ export default function ManageUsersPage() {
                     <Select
                       value={formData.role}
                       onValueChange={(value) =>
-                        setFormData({ ...formData, role: value })
+                        setFormData({ ...formData, role: value, student_id: "" })
                       }
                     >
                       <SelectTrigger>
@@ -249,6 +286,33 @@ export default function ManageUsersPage() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Show student dropdown only if role is siswa */}
+                  {formData.role === "siswa" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="student_id">Pilih Siswa</Label>
+                      <Select
+                        value={formData.student_id}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, student_id: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih siswa..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {students.map((student) => (
+                            <SelectItem key={student.id} value={student.id}>
+                              {student.name} - {student.nis} ({student.class})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">
+                        Link akun ini dengan data siswa
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <Button type="submit">Tambah User</Button>
