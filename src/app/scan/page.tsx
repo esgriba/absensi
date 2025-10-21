@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import Link from "next/link";
+
+interface Student {
+  id: string;
+  name: string;
+  nis: string;
+  class: string;
+  qr_code: string;
+}
+
+export default function ScanPage() {
+  const [scanning, setScanning] = useState(false);
+  const [lastScanned, setLastScanned] = useState<Student | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current
+          .stop()
+          .then(() => {
+            scannerRef.current?.clear();
+          })
+          .catch((err) => console.error(err));
+      }
+    };
+  }, []);
+
+  const startScanning = async () => {
+    try {
+      const html5QrCode = new Html5Qrcode("reader");
+      scannerRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        onScanSuccess,
+        onScanFailure
+      );
+
+      setScanning(true);
+    } catch (err) {
+      console.error("Error starting scanner:", err);
+      toast.error("Gagal memulai scanner. Pastikan kamera diizinkan.");
+    }
+  };
+
+  const stopScanning = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+        setScanning(false);
+      } catch (err) {
+        console.error("Error stopping scanner:", err);
+      }
+    }
+  };
+
+  const onScanSuccess = async (decodedText: string) => {
+    console.log("QR Code detected:", decodedText);
+
+    try {
+      // Cari siswa berdasarkan QR code
+      const { data: student, error: studentError } = await supabase
+        .from("students")
+        .select("*")
+        .eq("qr_code", decodedText)
+        .single();
+
+      if (studentError || !student) {
+        toast.error("QR Code tidak valid!");
+        return;
+      }
+
+      // Cek apakah sudah absen hari ini
+      const today = new Date().toISOString().split("T")[0];
+      const { data: existingAttendance } = await supabase
+        .from("attendance")
+        .select("*")
+        .eq("student_id", student.id)
+        .eq("date", today)
+        .single();
+
+      if (existingAttendance) {
+        toast.warning(`${student.name} sudah absen hari ini!`);
+        setLastScanned(student);
+        return;
+      }
+
+      // Tentukan status (hadir/telat berdasarkan jam)
+      const now = new Date();
+      const hour = now.getHours();
+      const status = hour < 8 ? "hadir" : "telat";
+
+      // Catat absensi
+      const { error: attendanceError } = await supabase
+        .from("attendance")
+        .insert([
+          {
+            student_id: student.id,
+            date: today,
+            time: now.toTimeString().split(" ")[0],
+            status: status,
+          },
+        ]);
+
+      if (attendanceError) throw attendanceError;
+
+      toast.success(
+        `Absensi berhasil! ${student.name} - ${status.toUpperCase()}`
+      );
+      setLastScanned(student);
+
+      // Stop scanner sebentar setelah berhasil scan
+      setTimeout(() => {
+        setLastScanned(null);
+      }, 3000);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Gagal mencatat absensi");
+    }
+  };
+
+  const onScanFailure = (error: any) => {
+    // Ignore errors saat scanning
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Link href="/">
+            <Button variant="ghost">← Kembali</Button>
+          </Link>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Scan QR Code Absensi</CardTitle>
+            <CardDescription>
+              Arahkan kamera ke QR Code siswa untuk mencatat kehadiran
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div
+                id="reader"
+                className="w-full max-w-md border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+                style={{ minHeight: scanning ? "300px" : "0px" }}
+              ></div>
+
+              {!scanning ? (
+                <Button onClick={startScanning} size="lg">
+                  Mulai Scan
+                </Button>
+              ) : (
+                <Button onClick={stopScanning} variant="destructive" size="lg">
+                  Stop Scan
+                </Button>
+              )}
+            </div>
+
+            {lastScanned && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-semibold text-green-900 mb-2">
+                  Absensi Berhasil!
+                </h3>
+                <div className="text-sm space-y-1">
+                  <p>
+                    <span className="text-gray-600">Nama:</span>{" "}
+                    {lastScanned.name}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">NIS:</span>{" "}
+                    {lastScanned.nis}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Kelas:</span>{" "}
+                    {lastScanned.class}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center text-sm text-gray-500">
+              <p>Pastikan QR Code terlihat jelas di dalam frame</p>
+              <p className="mt-2">
+                Absensi sebelum jam 08:00 = Hadir, setelahnya = Telat
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
