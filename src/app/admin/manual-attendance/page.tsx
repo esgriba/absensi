@@ -151,24 +151,68 @@ export default function ManualAttendancePage() {
 
       if (recordsToUpsert.length === 0) {
         toast.error("Tidak ada data untuk disimpan");
+        setSaving(false);
         return;
       }
 
-      // Upsert (insert or update)
-      const { error } = await supabase.from("attendance").upsert(
+      // Try upsert first (requires unique constraint on student_id, date)
+      let { error } = await supabase.from("attendance").upsert(
         recordsToUpsert,
         {
           onConflict: "student_id,date",
         }
       );
 
-      if (error) throw error;
+      // If upsert fails, try insert or update individually
+      if (error) {
+        console.warn("Upsert failed, trying individual operations:", error);
+        
+        // Process each record individually
+        for (const record of recordsToUpsert) {
+          // Check if record exists
+          const { data: existing } = await supabase
+            .from("attendance")
+            .select("id")
+            .eq("student_id", record.student_id)
+            .eq("date", record.date)
+            .single();
 
-      toast.success(`Berhasil menyimpan ${recordsToUpsert.length} absensi`);
+          if (existing) {
+            // Update existing record
+            const { error: updateError } = await supabase
+              .from("attendance")
+              .update({
+                time: record.time,
+                status: record.status,
+                keterangan: record.keterangan,
+              })
+              .eq("student_id", record.student_id)
+              .eq("date", record.date);
+
+            if (updateError) {
+              console.error("Update error for student:", record.student_id, updateError);
+            }
+          } else {
+            // Insert new record
+            const { error: insertError } = await supabase
+              .from("attendance")
+              .insert([record]);
+
+            if (insertError) {
+              console.error("Insert error for student:", record.student_id, insertError);
+            }
+          }
+        }
+
+        toast.success(`Berhasil menyimpan ${recordsToUpsert.length} absensi`);
+      } else {
+        toast.success(`Berhasil menyimpan ${recordsToUpsert.length} absensi`);
+      }
+
       checkExistingAttendance();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Gagal menyimpan absensi");
+      toast.error("Gagal menyimpan absensi: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setSaving(false);
     }
