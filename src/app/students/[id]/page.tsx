@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,13 +25,8 @@ interface Student {
 
 export default function StudentDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStudent();
-  }, [params.id]);
 
   const fetchStudent = async () => {
     try {
@@ -49,6 +44,10 @@ export default function StudentDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStudent();
+  }, [params.id]);
 
   const handleDownloadQR = () => {
     const svg = document.getElementById("qr-code");

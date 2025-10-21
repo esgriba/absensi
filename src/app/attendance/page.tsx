@@ -49,10 +49,6 @@ export default function AttendancePage() {
   const [filterClass, setFilterClass] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  useEffect(() => {
-    fetchAttendance();
-  }, [filterDate, filterClass, filterStatus]);
-
   const fetchAttendance = async () => {
     try {
       setLoading(true);
@@ -82,17 +78,26 @@ export default function AttendancePage() {
       if (error) throw error;
 
       // Transform data
-      let transformedData: AttendanceRecord[] = (data || []).map((item: any) => ({
-        id: item.id,
-        date: item.date,
-        time: item.time,
-        status: item.status,
-        student: {
-          name: item.students?.name || "-",
-          nis: item.students?.nis || "-",
-          class: item.students?.class || "-",
-        },
-      }));
+      let transformedData: AttendanceRecord[] = (data || []).map((item: unknown) => {
+        const record = item as {
+          id: string;
+          date: string;
+          time: string;
+          status: string;
+          students: { name: string; nis: string; class: string } | null;
+        };
+        return {
+          id: record.id,
+          date: record.date,
+          time: record.time,
+          status: record.status,
+          student: {
+            name: record.students?.name || "-",
+            nis: record.students?.nis || "-",
+            class: record.students?.class || "-",
+          },
+        };
+      });
 
       // Filter by class
       if (filterClass !== "all") {
@@ -115,6 +120,10 @@ export default function AttendancePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [filterDate, filterClass, filterStatus]);
 
   const getStatusBadge = (status: string) => {
     if (status === "hadir") {

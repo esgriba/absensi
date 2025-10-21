@@ -60,9 +60,10 @@ export default function RegisterPage() {
       
       // Redirect ke halaman detail siswa untuk melihat QR code
       router.push(`/students/${data.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error:", error);
-      if (error.code === "23505") {
+      const dbError = error as { code?: string };
+      if (dbError.code === "23505") {
         toast.error("NIS sudah terdaftar!");
       } else {
         toast.error("Gagal mendaftarkan siswa");

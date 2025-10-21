@@ -139,7 +139,7 @@ export default function ScanPage() {
     }
   };
 
-  const onScanFailure = (error: any) => {
+  const onScanFailure = () => {
     // Ignore errors saat scanning
   };
 
