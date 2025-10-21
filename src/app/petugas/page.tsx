@@ -83,7 +83,7 @@ export default function PetugasDashboard() {
           </Card>
 
           {/* Additional Info */}
-          <div className="mt-6 grid md:grid-cols-2 gap-4">
+          <div className="mt-6 grid md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>📊 Lihat Data Hari Ini</CardTitle>
@@ -95,6 +95,22 @@ export default function PetugasDashboard() {
                 <Link href="/attendance">
                   <Button className="w-full" variant="outline">
                     Lihat Data Absensi
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>✍️ Input Manual</CardTitle>
+                <CardDescription>
+                  Input absensi Alpha/Ijin/Sakit
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/petugas/manual-attendance">
+                  <Button className="w-full" variant="outline">
+                    Input Manual
                   </Button>
                 </Link>
               </CardContent>
