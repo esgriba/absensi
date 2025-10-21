@@ -25,7 +25,10 @@ interface Student {
 export default function ScanPage() {
   const [scanning, setScanning] = useState(false);
   const [lastScanned, setLastScanned] = useState<Student | null>(null);
+  const [processing, setProcessing] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
+  const lastQrCodeRef = useRef<string>("");
 
   useEffect(() => {
     return () => {
@@ -75,6 +78,23 @@ export default function ScanPage() {
   };
 
   const onScanSuccess = async (decodedText: string) => {
+    // Prevent duplicate scans within 3 seconds
+    const now = Date.now();
+    const timeSinceLastScan = now - lastScanTimeRef.current;
+    
+    // If same QR code scanned within 3 seconds, ignore
+    if (
+      processing || 
+      (lastQrCodeRef.current === decodedText && timeSinceLastScan < 3000)
+    ) {
+      return;
+    }
+
+    // Update refs
+    lastScanTimeRef.current = now;
+    lastQrCodeRef.current = decodedText;
+    setProcessing(true);
+
     console.log("QR Code detected:", decodedText);
 
     try {
@@ -87,6 +107,7 @@ export default function ScanPage() {
 
       if (studentError || !student) {
         toast.error("QR Code tidak valid!");
+        setProcessing(false);
         return;
       }
 
@@ -102,6 +123,12 @@ export default function ScanPage() {
       if (existingAttendance) {
         toast.warning(`${student.name} sudah absen hari ini!`);
         setLastScanned(student);
+        setProcessing(false);
+        
+        // Clear after 3 seconds
+        setTimeout(() => {
+          setLastScanned(null);
+        }, 3000);
         return;
       }
 
@@ -129,13 +156,15 @@ export default function ScanPage() {
       );
       setLastScanned(student);
 
-      // Stop scanner sebentar setelah berhasil scan
+      // Clear processing state and last scanned after 3 seconds
       setTimeout(() => {
         setLastScanned(null);
+        setProcessing(false);
       }, 3000);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Gagal mencatat absensi");
+      setProcessing(false);
     }
   };
 
@@ -175,6 +204,12 @@ export default function ScanPage() {
                 <Button onClick={stopScanning} variant="destructive" size="lg">
                   Stop Scan
                 </Button>
+              )}
+
+              {processing && (
+                <div className="text-sm text-gray-600">
+                  Memproses...
+                </div>
               )}
             </div>
 

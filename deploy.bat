@@ -8,7 +8,7 @@ git add .
 
 REM Commit
 echo Committing changes...
-git commit -m "Fix: ESLint and TypeScript errors for production build - Fixed TypeScript 'any' type errors - Fixed React Hooks exhaustive-deps warnings - Removed unused variables and imports - Ready for production deployment"
+git commit -m "Fix: Prevent duplicate QR scan - Added 3 second cooldown between scans - Added processing state to prevent rapid scanning - Clear scanned data after 3 seconds"
 
 REM Push
 echo Pushing to GitHub...
