@@ -60,9 +60,14 @@ export default function StudentsPage() {
           <Link href="/">
             <Button variant="ghost">← Kembali</Button>
           </Link>
-          <Link href="/register">
-            <Button>+ Tambah Siswa</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/import">
+              <Button variant="outline">📥 Import Excel</Button>
+            </Link>
+            <Link href="/register">
+              <Button>+ Tambah Siswa</Button>
+            </Link>
+          </div>
         </div>
 
         <Card>

@@ -21,7 +21,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-8">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle>Registrasi Siswa</CardTitle>
@@ -69,6 +69,30 @@ export default function Home() {
           </Card>
         </div>
 
+        {/* Import Feature Card */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <Card className="border-2 border-blue-200 bg-blue-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                📥 Import Data Siswa
+              </CardTitle>
+              <CardDescription>
+                Upload data siswa dalam jumlah banyak menggunakan file Excel
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Mendukung format .xlsx, .xls dengan kolom: nama, nis, kelas
+                </div>
+                <Link href="/import">
+                  <Button>Import Excel</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="mt-12 text-center">
           <Link href="/students">
             <Button variant="link">Lihat Daftar Siswa</Button>
@@ -78,3 +102,4 @@ export default function Home() {
     </div>
   );
 }
+

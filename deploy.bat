@@ -8,7 +8,7 @@ git add .
 
 REM Commit
 echo Committing changes...
-git commit -m "Fix: Prevent duplicate QR scan - Added 3 second cooldown between scans - Added processing state to prevent rapid scanning - Clear scanned data after 3 seconds"
+git commit -m "feat: Add Excel import feature for bulk student data upload - Added import page with upload functionality - Download Excel template feature - Real-time preview and validation - Bulk insert with progress tracking - Error handling for duplicate NIS - Updated homepage and students page UI"
 
 REM Push
 echo Pushing to GitHub...

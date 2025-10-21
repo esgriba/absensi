@@ -6,7 +6,8 @@ Aplikasi web untuk sistem absensi siswa SMK menggunakan teknologi QR Code. Diban
 
 - ✅ **Registrasi Siswa**: Form untuk mendaftarkan siswa baru dengan NIS, nama, dan kelas
 - 📱 **Generate QR Code**: Otomatis generate QR code unik untuk setiap siswa
-- 📸 **Scan QR Code**: Scan QR code menggunakan kamera untuk mencatat absensi
+- � **Import Excel**: Upload data siswa dalam jumlah banyak menggunakan file Excel
+- �📸 **Scan QR Code**: Scan QR code menggunakan kamera untuk mencatat absensi
 - 📊 **Dashboard Absensi**: Lihat data absensi dengan filter tanggal, kelas, dan status
 - 📋 **Daftar Siswa**: Kelola dan lihat semua siswa yang terdaftar
 - 🎨 **UI Modern**: Menggunakan Shadcn UI untuk tampilan yang clean dan profesional
