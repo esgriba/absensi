@@ -89,9 +89,16 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/attendance">
-                <Button className="w-full">Lihat Data Absensi</Button>
-              </Link>
+              <div className="space-y-2">
+                <Link href="/attendance">
+                  <Button className="w-full">Lihat Data Absensi</Button>
+                </Link>
+                <Link href="/admin/manual-attendance">
+                  <Button className="w-full" variant="outline">
+                    📝 Input Manual
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
 

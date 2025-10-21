@@ -126,24 +126,34 @@ export default function AttendancePage() {
   }, [filterDate, filterClass, filterStatus]);
 
   const getStatusBadge = (status: string) => {
-    if (status === "hadir") {
-      return (
-        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-          Hadir
-        </span>
-      );
-    } else if (status === "telat") {
-      return (
-        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-          Telat
-        </span>
-      );
-    }
-    return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">{status}</span>;
+    const badges = {
+      hadir: { bg: "bg-green-100", text: "text-green-800", label: "✅ Hadir" },
+      telat: { bg: "bg-yellow-100", text: "text-yellow-800", label: "⏰ Telat" },
+      alpha: { bg: "bg-red-100", text: "text-red-800", label: "❌ Alpha" },
+      ijin: { bg: "bg-blue-100", text: "text-blue-800", label: "📝 Ijin" },
+      sakit: { bg: "bg-purple-100", text: "text-purple-800", label: "🏥 Sakit" },
+    };
+
+    const badge = badges[status as keyof typeof badges] || {
+      bg: "bg-gray-100",
+      text: "text-gray-800",
+      label: status,
+    };
+
+    return (
+      <span
+        className={`px-2 py-1 ${badge.bg} ${badge.text} rounded-full text-xs font-medium`}
+      >
+        {badge.label}
+      </span>
+    );
   };
 
   const totalHadir = attendance.filter((a) => a.status === "hadir").length;
   const totalTelat = attendance.filter((a) => a.status === "telat").length;
+  const totalAlpha = attendance.filter((a) => a.status === "alpha").length;
+  const totalIjin = attendance.filter((a) => a.status === "ijin").length;
+  const totalSakit = attendance.filter((a) => a.status === "sakit").length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
@@ -155,7 +165,7 @@ export default function AttendancePage() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="grid md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -189,6 +199,32 @@ export default function AttendancePage() {
             <CardContent>
               <div className="text-3xl font-bold text-yellow-600">
                 {totalTelat}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Alpha
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-red-600">
+                {totalAlpha}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Ijin/Sakit
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-600">
+                {totalIjin + totalSakit}
               </div>
             </CardContent>
           </Card>
@@ -248,8 +284,11 @@ export default function AttendancePage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="hadir">Hadir</SelectItem>
-                    <SelectItem value="telat">Telat</SelectItem>
+                    <SelectItem value="hadir">✅ Hadir</SelectItem>
+                    <SelectItem value="telat">⏰ Telat</SelectItem>
+                    <SelectItem value="alpha">❌ Alpha</SelectItem>
+                    <SelectItem value="ijin">📝 Ijin</SelectItem>
+                    <SelectItem value="sakit">🏥 Sakit</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
