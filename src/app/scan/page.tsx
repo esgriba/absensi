@@ -135,7 +135,7 @@ export default function ScanPage() {
       // Tentukan status (hadir/telat berdasarkan jam)
       const now = new Date();
       const hour = now.getHours();
-      const status = hour < 8 ? "hadir" : "telat";
+      const status = hour < 7 ? "hadir" : "telat";
 
       // Catat absensi
       const { error: attendanceError } = await supabase
@@ -238,7 +238,7 @@ export default function ScanPage() {
             <div className="text-center text-sm text-gray-500">
               <p>Pastikan QR Code terlihat jelas di dalam frame</p>
               <p className="mt-2">
-                Absensi sebelum jam 08:00 = Hadir, setelahnya = Telat
+                Absensi sebelum jam 07:00 = Hadir, setelahnya = Telat
               </p>
             </div>
           </CardContent>

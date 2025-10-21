@@ -8,7 +8,7 @@ git add .
 
 REM Commit
 echo Committing changes...
-git commit -m "feat: Add Excel import feature for bulk student data upload - Added import page with upload functionality - Download Excel template feature - Real-time preview and validation - Bulk insert with progress tracking - Error handling for duplicate NIS - Updated homepage and students page UI"
+git commit -m "feat: Complete attendance system with Excel import - Added Excel import for bulk student upload - Changed late threshold to 7:00 AM - Fixed duplicate QR scan issue - All ESLint errors resolved - Production ready"
 
 REM Push
 echo Pushing to GitHub...
