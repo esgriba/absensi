@@ -34,6 +34,7 @@ interface AttendanceRecord {
   date: string;
   time: string;
   status: string;
+  keterangan?: string;
 }
 
 export default function SiswaDashboard() {
@@ -85,24 +86,34 @@ export default function SiswaDashboard() {
   };
 
   const getStatusBadge = (status: string) => {
-    if (status === "hadir") {
-      return (
-        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-          Hadir
-        </span>
-      );
-    } else if (status === "telat") {
-      return (
-        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-          Telat
-        </span>
-      );
-    }
-    return null;
+    const badges = {
+      hadir: { bg: "bg-green-100", text: "text-green-800", label: "✅ Hadir" },
+      telat: { bg: "bg-yellow-100", text: "text-yellow-800", label: "⏰ Telat" },
+      alpha: { bg: "bg-red-100", text: "text-red-800", label: "❌ Alpha" },
+      ijin: { bg: "bg-blue-100", text: "text-blue-800", label: "📝 Ijin" },
+      sakit: { bg: "bg-purple-100", text: "text-purple-800", label: "🏥 Sakit" },
+    };
+
+    const badge = badges[status as keyof typeof badges] || {
+      bg: "bg-gray-100",
+      text: "text-gray-800",
+      label: status,
+    };
+
+    return (
+      <span
+        className={`px-2 py-1 ${badge.bg} ${badge.text} rounded-full text-xs font-medium`}
+      >
+        {badge.label}
+      </span>
+    );
   };
 
   const totalHadir = attendance.filter((a) => a.status === "hadir").length;
   const totalTelat = attendance.filter((a) => a.status === "telat").length;
+  const totalAlpha = attendance.filter((a) => a.status === "alpha").length;
+  const totalIjin = attendance.filter((a) => a.status === "ijin").length;
+  const totalSakit = attendance.filter((a) => a.status === "sakit").length;
   const persentase = attendance.length > 0 
     ? ((totalHadir / attendance.length) * 100).toFixed(1) 
     : 0;
@@ -161,7 +172,7 @@ export default function SiswaDashboard() {
         )}
 
         {/* Statistics */}
-        <div className="grid md:grid-cols-4 gap-4 mb-6">
+        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-gray-600">
@@ -175,7 +186,7 @@ export default function SiswaDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-gray-600">Hadir</CardTitle>
+              <CardTitle className="text-sm text-gray-600">✅ Hadir</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-green-600">{totalHadir}</p>
@@ -184,7 +195,7 @@ export default function SiswaDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-gray-600">Telat</CardTitle>
+              <CardTitle className="text-sm text-gray-600">⏰ Telat</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-yellow-600">{totalTelat}</p>
@@ -193,12 +204,28 @@ export default function SiswaDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-gray-600">
-                Persentase Hadir
-              </CardTitle>
+              <CardTitle className="text-sm text-gray-600">❌ Alpha</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-blue-600">{persentase}%</p>
+              <p className="text-3xl font-bold text-red-600">{totalAlpha}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-gray-600">📝 Ijin</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-blue-600">{totalIjin}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-gray-600">🏥 Sakit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-purple-600">{totalSakit}</p>
             </CardContent>
           </Card>
         </div>
@@ -224,6 +251,7 @@ export default function SiswaDashboard() {
                       <TableHead>Tanggal</TableHead>
                       <TableHead>Waktu</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Keterangan</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -239,6 +267,9 @@ export default function SiswaDashboard() {
                         </TableCell>
                         <TableCell>{record.time.substring(0, 5)}</TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {record.keterangan || "-"}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
